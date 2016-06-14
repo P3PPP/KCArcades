@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace KCArcades.Controllers
 {
@@ -10,6 +12,26 @@ namespace KCArcades.Controllers
 	{
 		public ActionResult Index()
 		{
+			var directory = Server.MapPath("~/Content/ArcadesJson");
+			var files = Directory.GetFiles(directory);
+			var allArcades = files.Select(path =>
+			{
+				string json = null;
+				using (var reader = new StreamReader(path))
+				{
+					json = reader.ReadToEnd();
+				}
+				return json;
+			})
+			.Select(json =>
+			{
+				return JsonConvert.DeserializeObject<List<Arcade>>(json);
+			})
+			.SelectMany(x => x)
+			.ToList();
+
+			var allArcadesJson = JsonConvert.SerializeObject(allArcades);
+			ViewBag.Json = allArcadesJson;
 			return View();
 		}
 
@@ -26,5 +48,14 @@ namespace KCArcades.Controllers
 
 			return View();
 		}
+	}
+
+
+	public class Arcade
+	{
+		public string Name { get; set; }
+		public string Address { get; set; }
+		public double Latitude { get; set; }
+		public double Longitude { get; set; }
 	}
 }
