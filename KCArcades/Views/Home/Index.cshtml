@@ -20,44 +20,85 @@
     <script type="text/javascript">
 
         var arcades = @Html.Raw(@ViewBag.Json);
-
+        var openedInfo = [];
+        var markers = [];
         var map;
         function initMap() {
 
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 35.697775, lng: 139.7714551 },
-                zoom: 10
+                zoom: 14
+            });
+
+            map.addListener('click', () => closeAllInfo());
+
+            map.addListener('idle', () => {
+                var bounds = map.getBounds();
+                var neededMarkers = markers.filter(x => bounds.contains(x.getPosition()));
+
+                markers.filter(x => {
+                        return neededMarkers.indexOf(x) === -1;
+                    })
+                    .forEach(x => x.setMap(null));
+
+                neededMarkers.filter(x => x.getMap() === null)
+                    .forEach(x => x.setMap(map));
             });
 
 
-            arcades.forEach(function (arcade, index, ar) {
+            var contentBase = "";
+            arcades.forEach(arcade => {
                 var marker = new google.maps.Marker({
                     map: map,
                     position: { lat: arcade["Latitude"], lng: arcade["Longitude"] },
                     title: arcade["Name"],
                 });
+                
+                var name = arcade["Name"];
+                var address = arcade["Address"]
+                var lat = arcade["Latitude"];
+                var lng = arcade["Longitude"];
 
-                onMarkerClick(marker);
+                var contentStr = name + '</br>' + address + '</br><a href="http://maps.google.com/maps?q=' + lat + ',' + lng + '&ll=' + lat + ',' + lng + '&spn=0.00152,0.002226&num=1&vpsrc=6&t=m&z=14" target="_blank">Google Mapで表示</a>';
+                marker["info"] = new google.maps.InfoWindow({
+                    content: contentStr
+                });
+
+                marker.addListener('click', () => {
+                    closeAllInfo();
+
+                    marker["info"].open(marker.getMap(), marker);
+
+                    openedInfo.push(marker["info"]);
+                });
+
+                markers.push(marker);
+
+                //onMarkerClick(marker);
             });
 
         }
 
-        function onMarkerClick(marker)
+        //function onMarkerClick(marker)
+        //{
+        //    marker.addListener('click', () => {
+        //        closeAllInfo();
+
+        //        marker["info"].open(marker.getMap(), marker);
+
+        //        openedInfo.push(marker["info"]);
+        //    });
+        //}
+
+        function closeAllInfo()
         {
-            google.maps.event.addListener(
-                marker,
-                'click',
-                function (event) {
-                    new google.maps.InfoWindow({
-                        content: marker.getTitle()
-                    })
-                    .open(marker.getMap(), marker);
-                });
+            openedInfo.forEach(info => info.close());
+            openedInfo.length = 0;
         }
 
     </script>
     @*<script async defer
-            src="https://maps.googleapis.com/maps/api/js?callback=initMap">
+            src="https://maps.googleapis.com/maps/api/js?callback=initMap&sensor=true">
     </script>*@
     <script async defer
                 src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-ZNFJD7QHm3e_g4UhSnW44PZ1i5S19PY&callback=initMap">
