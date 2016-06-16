@@ -57,6 +57,7 @@
         var markers = [];
         var watcher;
         var circle = null;
+        var circleCenter = null;
         var map;
         
         function initMap() {
@@ -148,7 +149,17 @@
                     strokeOpacity: 0,
                     strokeWeight: 0,
                     fillColor: '#0088ff',
-                    fillOpacity: 0.2
+                    fillOpacity: 0.3
+                });
+                circleCenter = new google.maps.Circle({
+                    map: map,
+                    center: currentPosition,
+                    radius: 3,
+                    strokeColor: '#0088ff',
+                    strokeOpacity: 0,
+                    strokeWeight: 0,
+                    fillColor: '#0088ff',
+                    fillOpacity: 1
                 });
                 map.panTo(currentPosition);
             }
@@ -156,6 +167,7 @@
             {
                 circle.setCenter(currentPosition);
                 circle.setRadius(position.coords.accuracy);
+                circleCenter.setCenter(currentPosition);
             }
         }
         
