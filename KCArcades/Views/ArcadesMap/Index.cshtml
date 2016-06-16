@@ -25,7 +25,7 @@
         }
 
         .titleBar {
-            background-color: #113285;
+            background-color: #007ACC;
         }
 
         #label {
@@ -55,15 +55,15 @@
         var arcades = @Html.Raw(@ViewBag.Json);
         var openedInfo = [];
         var markers = [];
-        var watcher;
+        var watcher = null;
         var circle = null;
         var circleCenter = null;
-        var map;
+        var map = null;
         
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 35.697775, lng: 139.7714551 },
-                zoom: 14
+                zoom: 13
             });
 
             map.addListener('click', function() { closeAllInfo(); });
@@ -151,16 +151,24 @@
                     fillColor: '#0088ff',
                     fillOpacity: 0.3
                 });
-                circleCenter = new google.maps.Circle({
+
+                var userSymbol = {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: "#007ACC",
+                    fillOpacity: 1,
+                    scale: 11,
+                    strokeColor: 'white',
+                    strokeWeight: 3
+                };
+
+                var circleCenter = new google.maps.Marker({
                     map: map,
-                    center: currentPosition,
-                    radius: 3,
-                    strokeColor: '#0088ff',
-                    strokeOpacity: 0,
-                    strokeWeight: 0,
-                    fillColor: '#0088ff',
-                    fillOpacity: 1
+                    position: currentPosition,
+                    icon: userSymbol,
+                    title: "User",
+                    zIndex: google.maps.Marker.MAX_ZINDEX,
                 });
+
                 map.panTo(currentPosition);
             }
             else
