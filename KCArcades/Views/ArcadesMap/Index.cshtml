@@ -63,24 +63,24 @@
                 zoom: 14
             });
 
-            map.addListener('click', () => closeAllInfo());
+            map.addListener('click', function() { closeAllInfo(); });
 
-            map.addListener('idle', () => {
+            map.addListener('idle', function() {
                 var bounds = map.getBounds();
-                var neededMarkers = markers.filter(x => bounds.contains(x.getPosition()));
+                var neededMarkers = markers.filter(function(x) { return bounds.contains(x.getPosition()); });
 
-                markers.filter(x => {
+                markers.filter(function(x)  {
                         return neededMarkers.indexOf(x) === -1;
                     })
-                    .forEach(x => x.setMap(null));
+                    .forEach(function(x) { x.setMap(null); });
 
-                neededMarkers.filter(x => x.getMap() === null)
-                    .forEach(x => x.setMap(map));
+                neededMarkers.filter(function(x) { return x.getMap() === null; })
+                    .forEach(function(x) { x.setMap(map); });
             });
 
 
             var contentBase = "";
-            arcades.forEach(arcade => {
+            arcades.forEach(function(arcade) {
                 var marker = new google.maps.Marker({
                     map: map,
                     position: { lat: arcade["Latitude"], lng: arcade["Longitude"] },
@@ -97,7 +97,7 @@
                     content: contentStr
                 });
 
-                marker.addListener('click', () => {
+                marker.addListener('click', function() {
                     closeAllInfo();
 
                     marker["info"].open(marker.getMap(), marker);
@@ -125,7 +125,7 @@
 
         function closeAllInfo()
         {
-            openedInfo.forEach(info => info.close());
+            openedInfo.forEach(function(info) { info.close(); });
             openedInfo.length = 0;
         }
 
