@@ -118,7 +118,7 @@
                     "maximumAge": 0,                    // データをキャッシュ時間 : ミリ秒
                 };
 
-                watcher = navigator.geolocation.watchPosition(cmanWatOk,      // 位置取得成功時に実行される関数
+                watcher = navigator.geolocation.watchPosition(onWatchOk,      // 位置取得成功時に実行される関数
                                                               onWatchError,   // 位置取得失敗時に実行される関数
                                                               watchOptions ); // オプション
             }
