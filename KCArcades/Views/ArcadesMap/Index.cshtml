@@ -190,12 +190,19 @@
         }
 
         </script>
-        @*<script async defer
-                src="https://maps.googleapis.com/maps/api/js?callback=initMap&sensor=true">
-        </script>*@
-        <script async defer
-                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-ZNFJD7QHm3e_g4UhSnW44PZ1i5S19PY&callback=initMap">
-        </script>
+
+        @if (HttpContext.Current.IsDebuggingEnabled)
+        {
+            <script async defer
+                    src="https://maps.googleapis.com/maps/api/js?callback=initMap&sensor=true">
+            </script>
+        }
+        else
+        {
+            <script async defer
+                    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-ZNFJD7QHm3e_g4UhSnW44PZ1i5S19PY&callback=initMap">
+            </script>
+        }
 
     </div>
 </body>
