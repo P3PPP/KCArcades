@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using KCArcades.Models;
 
 namespace KCArcades.Controllers
 {
@@ -33,6 +34,12 @@ namespace KCArcades.Controllers
 
 			var allArcadesJson = JsonConvert.SerializeObject(allArcades);
 			ViewBag.Json = allArcadesJson;
+			return View();
+		}
+
+		[HttpGet]
+		public ActionResult Report(Arcade arcade)
+		{
 			return View();
 		}
 	}

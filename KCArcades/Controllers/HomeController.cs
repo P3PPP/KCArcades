@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.IO;
 using Newtonsoft.Json;
+using KCArcades.Models;
 
 namespace KCArcades.Controllers
 {
@@ -50,12 +51,4 @@ namespace KCArcades.Controllers
 		}
 	}
 
-
-	public class Arcade
-	{
-		public string Name { get; set; }
-		public string Address { get; set; }
-		public double Latitude { get; set; }
-		public double Longitude { get; set; }
-	}
 }
