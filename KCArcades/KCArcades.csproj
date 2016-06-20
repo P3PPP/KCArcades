@@ -213,6 +213,9 @@
     <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\ArcadesMap\Index.cshtml" />
+    <Content Include="Views\ArcadesMap\Report.cshtml" />
+    <Content Include="Views\ArcadesMap\ReportFailed.cshtml" />
+    <Content Include="Views\ArcadesMap\ReportSuccessful.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

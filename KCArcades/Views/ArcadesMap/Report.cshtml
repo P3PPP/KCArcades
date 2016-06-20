@@ -1,0 +1,91 @@
+﻿@model KCArcades.Models.ArcadeReport
+
+@{
+    ViewBag.Title = "Report";
+}
+
+<h2>情報提供フォーム</h2>
+
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>艦これAC設置店</h4>
+
+        @Html.HiddenFor(model => model.Target)
+
+        <p>店舗名</p>
+@*        @Html.DisplayFor(model => model.Target.Name)*@
+        @Html.DisplayFor(model => model.TargetName)
+        @Html.HiddenFor(model => model.TargetName)
+        <p>住所</p>
+@*        @Html.DisplayFor(model => model.Target.Address)*@
+        @Html.DisplayFor(model => model.TargetAddress)
+        @Html.HiddenFor(model => model.TargetAddress)
+
+        @Html.HiddenFor(model => model.TargetLatitude)
+        @Html.HiddenFor(model => model.TargetLongitude)
+
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Latitude, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Latitude, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Latitude, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Longitude, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Longitude, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Longitude, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.GPLimitation, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.GPLimitation,
+                   (IEnumerable<SelectListItem>)ViewBag.GPLimitationList,
+                   " 選択してください ",
+                   new { @class = "title_list" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.NumberOfMachines, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.NumberOfMachines,
+                   (IEnumerable<SelectListItem>)new SelectList(Enumerable.Range(1, 100).ToList()),
+                   " 選択してください ",
+                   new { @class = "title_list" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.AdditionalInfo, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.AdditionalInfo, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.AdditionalInfo, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="報告する！" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("地図に戻る", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
