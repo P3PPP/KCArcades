@@ -37,6 +37,9 @@
             flex: 1;
         }
 
+        .infoWindowContent {
+        }
+
     </style>
 
 </head>
@@ -52,142 +55,197 @@
         <div id="map"></div>
         <script type="text/javascript">
 
-        var arcades = @Html.Raw(@ViewBag.Json);
-        var openedInfo = [];
-        var markers = [];
-        var watcher = null;
-        var circle = null;
-        var circleCenter = null;
-        var map = null;
-        
-        function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: 35.697775, lng: 139.7714551 },
-                zoom: 13
-            });
+            var arcades = @Html.Raw(@ViewBag.Json);
+            var openedInfo = [];
+            var markers = [];
+            var watcher = null;
+            var circle = null;
+            var circleCenter = null;
+            var map = null;
 
-            map.addListener('click', function() { closeAllInfo(); });
-
-            map.addListener('idle', function() {
-                var bounds = map.getBounds();
-                var neededMarkers = markers.filter(function(x) { return bounds.contains(x.getPosition()); });
-
-                markers.filter(function(x)  {
-                        return neededMarkers.indexOf(x) === -1;
-                    })
-                    .forEach(function(x) { x.setMap(null); });
-
-                neededMarkers.filter(function(x) { return x.getMap() === null; })
-                    .forEach(function(x) { x.setMap(map); });
-            });
-
-
-            arcades.forEach(function(arcade) {
-                var marker = new google.maps.Marker({
-                    map: map,
-                    position: { lat: arcade["Latitude"], lng: arcade["Longitude"] },
-                    title: arcade["Name"],
+            function initMap() {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: { lat: 35.697775, lng: 139.7714551 },
+                    zoom: 13
                 });
 
+                map.addListener('click', function() { closeAllInfo(); });
+
+                map.addListener('idle', function() {
+                    var bounds = map.getBounds();
+                    var neededMarkers = markers.filter(function(x) { return bounds.contains(x.getPosition()); });
+
+                    markers.filter(function(x)  {
+                        return neededMarkers.indexOf(x) === -1;
+                    })
+                        .forEach(function(x) { x.setMap(null); });
+
+                    neededMarkers.filter(function(x) { return x.getMap() === null; })
+                        .forEach(function(x) { x.setMap(map); });
+                });
+
+
+                arcades.forEach(function(arcade) {
+                    var marker = new google.maps.Marker({
+                        map: map,
+                        position: { lat: arcade["Latitude"], lng: arcade["Longitude"] },
+                        title: arcade["Name"],
+                    });
+
+                    var name = arcade["Name"];
+                    var address = arcade["Address"]
+                    var lat = arcade["Latitude"];
+                    var lng = arcade["Longitude"];
+
+                    //var contentStr = name + '</br>' + address + '</br><a href="http://maps.google.com/maps?q=' + lat + ',' + lng + '&ll=' + lat + ',' + lng + '&spn=0.00152,0.002226&num=1&vpsrc=6&t=m&z=14" target="_blank">Google Mapで表示</a>';
+                    var contentStr = generateInfoWindowContent(arcade);
+                    marker["info"] = new google.maps.InfoWindow({
+                        content: contentStr
+                    });
+
+                    marker.addListener('click', function() {
+                        closeAllInfo();
+
+                        marker["info"].open(marker.getMap(), marker);
+
+                        openedInfo.push(marker["info"]);
+                    });
+
+                    markers.push(marker);
+
+                    //onMarkerClick(marker);
+                });
+
+                if(navigator.geolocation) {
+                    var watchOptions = {
+                        "enableHighAccuracy": true,         // true : 高精度
+                        "timeout": 10000,                   // タイムアウト : ミリ秒
+                        "maximumAge": 0,                    // データをキャッシュ時間 : ミリ秒
+                    };
+
+                    watcher = navigator.geolocation.watchPosition(onWatchOk,      // 位置取得成功時に実行される関数
+                                                                  onWatchError,   // 位置取得失敗時に実行される関数
+                                                                  watchOptions ); // オプション
+                }
+            }
+
+
+            function generateInfoWindowContent(arcade)
+            {
+                var id = arcade["Id"];
                 var name = arcade["Name"];
                 var address = arcade["Address"]
                 var lat = arcade["Latitude"];
                 var lng = arcade["Longitude"];
+                var machines = (arcade["NumberOfMachines"] === null) ? "不明" : arcade["NumberOfMachines"] + "台";
+                var gPLimitation = gPLimitationToString(arcade["GPLimitation"]);
 
-                var contentStr = name + '</br>' + address + '</br><a href="http://maps.google.com/maps?q=' + lat + ',' + lng + '&ll=' + lat + ',' + lng + '&spn=0.00152,0.002226&num=1&vpsrc=6&t=m&z=14" target="_blank">Google Mapで表示</a>';
-                marker["info"] = new google.maps.InfoWindow({
-                    content: contentStr
-                });
+                var content =
+                    '<div class="infoWindowContent">' +
+                    name +
+                    '</br>' +
+                    address +
+                    '</br>' +
+                    '設置台数：' + machines +
+                    '</br>' +
+                    'GP制限：' + gPLimitation +
+                    '</br>' +
+                    //'' +
+                    //'' +
+                    '<a href="http://maps.google.com/maps?q=' + lat + ',' + lng + '&ll=' + lat + ',' + lng + '&spn=0.00152,0.002226&num=1&vpsrc=6&t=m&z=14" target="_blank">Google Mapで表示</a>' +
+                    '　' +
+                    '<a href="http://' + location.host + '/ArcadesMap/Report?id=' + id + '" target="_blank">情報募集中！</a>' +
+                    '</div>';
 
-                marker.addListener('click', function() {
-                    closeAllInfo();
-
-                    marker["info"].open(marker.getMap(), marker);
-
-                    openedInfo.push(marker["info"]);
-                });
-
-                markers.push(marker);
-
-                //onMarkerClick(marker);
-            });
-            
-            if(navigator.geolocation) {
-                var watchOptions = {
-                    "enableHighAccuracy": true,         // true : 高精度
-                    "timeout": 10000,                   // タイムアウト : ミリ秒
-                    "maximumAge": 0,                    // データをキャッシュ時間 : ミリ秒
-                };
-
-                watcher = navigator.geolocation.watchPosition(onWatchOk,      // 位置取得成功時に実行される関数
-                                                              onWatchError,   // 位置取得失敗時に実行される関数
-                                                              watchOptions ); // オプション
+                return content;
             }
-        }
 
-        //function onMarkerClick(marker)
-        //{
-        //    marker.addListener('click', () => {
-        //        closeAllInfo();
-
-        //        marker["info"].open(marker.getMap(), marker);
-
-        //        openedInfo.push(marker["info"]);
-        //    });
-        //}
-        
-        function onWatchOk(position)
-        {
-            var currentPosition = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-            if(circle === null)
+            function gPLimitationToString(gPLimitation)
             {
-                circle = new google.maps.Circle({
-                    map: map,
-                    center: currentPosition,
-                    radius: position.coords.accuracy, // 単位はメートル
-                    strokeColor: '#0088ff',
-                    strokeOpacity: 0,
-                    strokeWeight: 0,
-                    fillColor: '#0088ff',
-                    fillOpacity: 0.3
-                });
-
-                var userSymbol = {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    fillColor: "#007ACC",
-                    fillOpacity: 1,
-                    scale: 11,
-                    strokeColor: 'white',
-                    strokeWeight: 3
-                };
-
-                var circleCenter = new google.maps.Marker({
-                    map: map,
-                    position: currentPosition,
-                    icon: userSymbol,
-                    title: "User",
-                    zIndex: google.maps.Marker.MAX_ZINDEX,
-                });
-
-                map.panTo(currentPosition);
+                switch (gPLimitation) {
+                    case 1:
+                        return "300GP";
+                        break;
+                    case 2:
+                        return "600GP";
+                        break;
+                    case 3:
+                        return "900GP";
+                        break;
+                    case 4:
+                        return "1200GP以上";
+                        break;
+                    case -1:
+                        return "無制限";
+                        break;
+                    default:
+                        return "不明";
+                }
             }
-            else
+
+            //function onMarkerClick(marker)
+            //{
+            //    marker.addListener('click', () => {
+            //        closeAllInfo();
+
+            //        marker["info"].open(marker.getMap(), marker);
+
+            //        openedInfo.push(marker["info"]);
+            //    });
+            //}
+
+            function onWatchOk(position)
             {
-                circle.setCenter(currentPosition);
-                circle.setRadius(position.coords.accuracy);
-                circleCenter.setCenter(currentPosition);
-            }
-        }
-        
-        function onWatchError(error)
-        {
-        }
+                var currentPosition = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                if(circle === null)
+                {
+                    circle = new google.maps.Circle({
+                        map: map,
+                        center: currentPosition,
+                        radius: position.coords.accuracy, // 単位はメートル
+                        strokeColor: '#0088ff',
+                        strokeOpacity: 0,
+                        strokeWeight: 0,
+                        fillColor: '#0088ff',
+                        fillOpacity: 0.3
+                    });
 
-        function closeAllInfo()
-        {
-            openedInfo.forEach(function(info) { info.close(); });
-            openedInfo.length = 0;
-        }
+                    var userSymbol = {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: "#007ACC",
+                        fillOpacity: 1,
+                        scale: 11,
+                        strokeColor: 'white',
+                        strokeWeight: 3
+                    };
+
+                    var circleCenter = new google.maps.Marker({
+                        map: map,
+                        position: currentPosition,
+                        icon: userSymbol,
+                        title: "User",
+                        zIndex: google.maps.Marker.MAX_ZINDEX,
+                    });
+
+                    map.panTo(currentPosition);
+                }
+                else
+                {
+                    circle.setCenter(currentPosition);
+                    circle.setRadius(position.coords.accuracy);
+                    circleCenter.setCenter(currentPosition);
+                }
+            }
+
+            function onWatchError(error)
+            {
+            }
+
+            function closeAllInfo()
+            {
+                openedInfo.forEach(function(info) { info.close(); });
+                openedInfo.length = 0;
+            }
 
         </script>
 

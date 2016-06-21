@@ -11,7 +11,7 @@
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
+        @*<div class="container">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                     <span class="icon-bar"></span>
@@ -27,13 +27,13 @@
                     <li>@Html.ActionLink("連絡先", "Contact", "Home")</li>
                 </ul>
             </div>
-        </div>
+        </div>*@
     </div>
     <div class="container body-content">
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - マイ ASP.NET アプリケーション</p>
+            <p>&copy; @DateTime.Parse("2016年").Year - <a href="https://twitter.com/ticktackmobile" target="_blank")>@@ticktackmobile</a></p>
         </footer>
     </div>
 

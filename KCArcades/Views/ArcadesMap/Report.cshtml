@@ -1,4 +1,4 @@
-﻿@model KCArcades.Models.ArcadeReport
+﻿@model KCArcades.Models.ArcadeReportViewModel
 
 @{
     ViewBag.Title = "Report";
@@ -7,29 +7,34 @@
 <h2>情報提供フォーム</h2>
 
 
-@using (Html.BeginForm()) 
+@using (Html.BeginForm())
 {
+
     @Html.AntiForgeryToken()
     
     <div class="form-horizontal">
+        @Html.HiddenFor(model => model.Id)
+
         <h4>艦これAC設置店</h4>
 
-        @Html.HiddenFor(model => model.Target)
+        <div class="form-group">
+            <label class="control-label col-md-2" for="Latitude">店舗名</label>
+            <div class="col-md-10">
+                @Html.DisplayFor(model => model.TargetName)
+            </div>
+        </div>
 
-        <p>店舗名</p>
-@*        @Html.DisplayFor(model => model.Target.Name)*@
-        @Html.DisplayFor(model => model.TargetName)
-        @Html.HiddenFor(model => model.TargetName)
-        <p>住所</p>
-@*        @Html.DisplayFor(model => model.Target.Address)*@
-        @Html.DisplayFor(model => model.TargetAddress)
-        @Html.HiddenFor(model => model.TargetAddress)
-
-        @Html.HiddenFor(model => model.TargetLatitude)
-        @Html.HiddenFor(model => model.TargetLongitude)
+        <div class="form-group">
+            <label class="control-label col-md-2" for="Latitude">住所</label>
+            <div class="col-md-10">
+                @Html.DisplayFor(model => model.TargetAddress)
+            </div>
+        </div>
+        
 
         <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        @*@Html.ValidationSummary(true, "", new { @class = "text-danger" })
         <div class="form-group">
             @Html.LabelFor(model => model.Latitude, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
@@ -44,6 +49,16 @@
                 @Html.EditorFor(model => model.Longitude, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Longitude, "", new { @class = "text-danger" })
             </div>
+        </div>*@
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.NumberOfMachines, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.NumberOfMachines,
+                   (IEnumerable<SelectListItem>)new SelectList(Enumerable.Range(1, 30).ToList()),
+                   " 選択してください ",
+                   new { @class = "title_list" })
+            </div>
         </div>
 
         <div class="form-group">
@@ -51,16 +66,6 @@
             <div class="col-md-10">
                 @Html.DropDownListFor(model => model.GPLimitation,
                    (IEnumerable<SelectListItem>)ViewBag.GPLimitationList,
-                   " 選択してください ",
-                   new { @class = "title_list" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.NumberOfMachines, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownListFor(model => model.NumberOfMachines,
-                   (IEnumerable<SelectListItem>)new SelectList(Enumerable.Range(1, 100).ToList()),
                    " 選択してください ",
                    new { @class = "title_list" })
             </div>
@@ -76,7 +81,7 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="報告する！" class="btn btn-default" />
+                <input type="submit" value="送信" class="btn btn-default" />
             </div>
         </div>
     </div>

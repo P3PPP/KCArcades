@@ -26,7 +26,7 @@ namespace KCArcades.Controllers
 			})
 			.Select(json =>
 			{
-				return JsonConvert.DeserializeObject<List<Arcade>>(json);
+				return JsonConvert.DeserializeObject<List<ArcadeViewModel>>(json);
 			})
 			.SelectMany(x => x)
 			.ToList();

@@ -20,43 +20,71 @@ namespace KCArcades.Controllers
 				return _GPLimitationList ?? (_GPLimitationList = CreateGPLimitationList());
 			}
 		}
+
+		private KCArcadesContext db = new KCArcadesContext();
+
 		// GET: ArcadesMap
 		public ActionResult Index()
         {
-			var directory = Server.MapPath("~/Content/ArcadesJson");
-			var files = Directory.GetFiles(directory);
-			var allArcades = files.Select(path =>
-			{
-				string json = null;
-				using (var reader = new StreamReader(path))
-				{
-					json = reader.ReadToEnd();
-				}
-				return json;
-			})
-			.Select(json =>
-			{
-				return JsonConvert.DeserializeObject<List<Arcade>>(json);
-			})
-			.SelectMany(x => x)
-			.ToList();
+			//var directory = Server.MapPath("~/Content/ArcadesJson");
+			//var files = Directory.GetFiles(directory);
+			//var allArcades = files.Select(path =>
+			//{
+			//	string json = null;
+			//	using (var reader = new StreamReader(path))
+			//	{
+			//		json = reader.ReadToEnd();
+			//	}
+			//	return json;
+			//})
+			//.Select(json =>
+			//{
+			//	return JsonConvert.DeserializeObject<List<ArcadeViewModel>>(json);
+			//})
+			//.SelectMany(x => x)
+			//.ToList();
 
+			//var allArcadesJson = JsonConvert.SerializeObject(allArcades);
+
+			var arcades = db.Arcades.ToList();
+
+			var allArcades = arcades.Select(x => new ArcadeViewModel
+			{
+				Id = x.Id,
+				Name = x.Name,
+				Address = x.Address,
+				Latitude = x.Geography.Latitude.Value,
+				Longitude = x.Geography.Longitude.Value,
+				NumberOfMachines = x.NumberOfMachines.HasValue ? x.NumberOfMachines.Value : new int?(),
+				GPLimitation = x.GPLimitation.HasValue ? x.GPLimitation.Value : new GPLimitation?(),
+				BuildingLimitation = x.BuildingLimitation.HasValue ? x.BuildingLimitation.Value : new int?(),
+				Description = x.Description,
+			})
+			.ToList();
 			var allArcadesJson = JsonConvert.SerializeObject(allArcades);
+
 			ViewBag.Json = allArcadesJson;
+
 			return View();
 		}
 
 		[HttpGet]
-		public ActionResult Report(Arcade arcade)
+		public ActionResult Report(int id)
 		{
-			var report = new ArcadeReport
+			var arcade = db.Arcades.FirstOrDefault(x => x.Id == id);
+
+			if(arcade == null)
 			{
-				Target = arcade,
+				return View("ReportFailed");
+			}
+
+			var report = new ArcadeReportViewModel
+			{
+				Id = arcade.Id,
 				TargetName = arcade.Name,
 				TargetAddress = arcade.Address,
-				TargetLatitude = arcade.Latitude,
-				TargetLongitude = arcade.Longitude,
-				AdditionalInfo = "ハウスルールとか？",
+				TargetLatitude = arcade.Geography.Latitude.Value,
+				TargetLongitude = arcade.Geography.Longitude.Value,
 			};
 
 			ViewBag.GPLimitationList = GPLimitationList;
@@ -66,17 +94,18 @@ namespace KCArcades.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken()]
-		public ActionResult Report(ArcadeReport report)
+		public ActionResult Report(ArcadeReportViewModel report)
 		{
-			// 
-			//if (report.Target == null /* || 不正な値  */)
-			//{
-			//	return View("ReportFailed");
-			//}
-			if (report.TargetName == null /* || 不正な値  */)
+			var arcade = db.Arcades.FirstOrDefault(x => x.Id == report.Id);
+			if (arcade == null)
 			{
 				return View("ReportFailed");
 			}
+
+			report.TargetName = arcade.Name;
+			report.TargetAddress = arcade.Address;
+			report.TargetLatitude = arcade.Geography.Latitude.Value;
+			report.TargetLongitude = arcade.Geography.Longitude.Value;
 
 			try
 			{
@@ -93,9 +122,9 @@ namespace KCArcades.Controllers
 
 		private static SelectList CreateGPLimitationList()
 		{
-			var type = typeof(GPLimitations);
+			var type = typeof(GPLimitation);
 			var items = Enum.GetValues(type)
-				.Cast<GPLimitations>()
+				.Cast<GPLimitation>()
 				.ToDictionary(p =>
 				{
 					var attribute = (DisplayAttribute)type.GetField(p.ToString())
@@ -107,15 +136,10 @@ namespace KCArcades.Controllers
 			return new SelectList(items, "Value", "Key");
 		}
 
-		private static void SendReportMail(ArcadeReport report)
+		private static void SendReportMail(ArcadeReportViewModel report)
 		{
-			var sender = "KanColleArcades@kcarcades.net";
-			var recipient = "kcarcades-report@gmail.com";
+			var sender = "kcarcades-report@kcarcades.net";
 			var subject = "[KCArcades]店舗情報更新リクエスト";
-
-			//店舗名：{ report.Target.Name}
-			//住所：{ report.Target.Address}
-			//座標：({ report.Target.Latitude},{ report.Target.Longitude})
 
 			var body = $@"
 # 更新対象
@@ -125,15 +149,32 @@ namespace KCArcades.Controllers
 
 # 更新データ
 設置台数：{report.NumberOfMachines}
-GP制限：{report.GPLimitation}
+GP制限：{report.GPLimitation.Value}({report.GPLimitation})
 座標：({report.Latitude},{report.Longitude})
 追加情報：{report.AdditionalInfo}
 ";
 
+			var username = System.Environment.GetEnvironmentVariable("SENDGRID_USER");
+			var password = System.Environment.GetEnvironmentVariable("SENDGRID_PASS");
+
+			var mailMsg = new System.Net.Mail.MailMessage();
+
+			mailMsg.To.Add(new System.Net.Mail.MailAddress("ticktackmob@gmail.com"));
+			mailMsg.From = new System.Net.Mail.MailAddress(sender);
+
+			mailMsg.Subject = subject;
+			mailMsg.IsBodyHtml = false;
+			mailMsg.Body = body;
+
 			using (var client = new System.Net.Mail.SmtpClient())
 			{
+				client.Host = "smtp.sendgrid.net";
+				client.Port = 587;
+				client.EnableSsl = true;
+				client.Credentials = new System.Net.NetworkCredential(username, password);
+
 				client.DeliveryMethod = System.Net.Mail.SmtpDeliveryMethod.Network;
-				client.Send(sender, recipient, subject, body);
+				client.Send(mailMsg);
 			}
 		}
 
