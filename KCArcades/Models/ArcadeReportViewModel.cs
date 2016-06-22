@@ -38,13 +38,13 @@ namespace KCArcades.Models
 		//[Display(Name = "")]
 		//None = 0,
 		[Display(Name = "300GP")]
-		GP300 = 1,
+		GP300 = 300,
 		[Display(Name = "600GP")]
-		GP600,
+		GP600 = 600,
 		[Display(Name = "900GP")]
-		GP900,
+		GP900 = 900,
 		[Display(Name = "1200GP以上")]
-		GP1200Over,
+		GP1200Over = 1200,
 		[Display(Name = "無制限")]
 		Infinite = -1,
 	}
