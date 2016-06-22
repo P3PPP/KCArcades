@@ -26,6 +26,7 @@ namespace KCArcades.Controllers
 		// GET: ArcadesMap
 		public ActionResult Index()
         {
+			// ローカルのjsonファイルから読み込む
 			//var directory = Server.MapPath("~/Content/ArcadesJson");
 			//var files = Directory.GetFiles(directory);
 			//var allArcades = files.Select(path =>
@@ -44,10 +45,8 @@ namespace KCArcades.Controllers
 			//.SelectMany(x => x)
 			//.ToList();
 
-			//var allArcadesJson = JsonConvert.SerializeObject(allArcades);
-
+			// DBから取得
 			var arcades = db.Arcades.ToList();
-
 			var allArcades = arcades.Select(x => new ArcadeViewModel
 			{
 				Id = x.Id,
@@ -61,6 +60,7 @@ namespace KCArcades.Controllers
 				Description = x.Description,
 			})
 			.ToList();
+
 			var allArcadesJson = JsonConvert.SerializeObject(allArcades);
 
 			ViewBag.Json = allArcadesJson;
