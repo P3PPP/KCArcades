@@ -143,6 +143,7 @@ namespace KCArcades.Controllers
 
 			var body = $@"
 # 更新対象
+ID：{report.Id}
 店舗名：{report.TargetName}
 住所：{report.TargetAddress}
 座標：({report.TargetLatitude},{report.TargetLongitude})
@@ -156,10 +157,11 @@ GP制限：{report.GPLimitation.Value}({report.GPLimitation})
 
 			var username = System.Environment.GetEnvironmentVariable("SENDGRID_USER");
 			var password = System.Environment.GetEnvironmentVariable("SENDGRID_PASS");
+			var receiver = System.Environment.GetEnvironmentVariable("REPORT_RECEIVER");
 
 			var mailMsg = new System.Net.Mail.MailMessage();
-
-			mailMsg.To.Add(new System.Net.Mail.MailAddress("ticktackmob@gmail.com"));
+			
+			mailMsg.To.Add(new System.Net.Mail.MailAddress(receiver));
 			mailMsg.From = new System.Net.Mail.MailAddress(sender);
 
 			mailMsg.Subject = subject;
