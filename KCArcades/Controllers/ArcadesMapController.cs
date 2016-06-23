@@ -7,10 +7,12 @@ using System.Web;
 using System.Web.Mvc;
 using KCArcades.Models;
 using System.ComponentModel.DataAnnotations;
+using KCArcades.Models.Tables;
+using System.Threading.Tasks;
 
 namespace KCArcades.Controllers
 {
-    public class ArcadesMapController : Controller
+    public class ArcadesMapController : AsyncController
     {
 		static SelectList _GPLimitationList;
 		public SelectList GPLimitationList
@@ -22,6 +24,7 @@ namespace KCArcades.Controllers
 		}
 
 		private KCArcadesContext db = new KCArcadesContext();
+		private ArcadeReportEntityManager manager;
 
 		// GET: ArcadesMap
 		public ActionResult Index()
@@ -94,12 +97,12 @@ namespace KCArcades.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken()]
-		public ActionResult Report(ArcadeReportViewModel report)
+		public async Task<ActionResult> Report(ArcadeReportViewModel report)
 		{
 			var arcade = db.Arcades.FirstOrDefault(x => x.Id == report.Id);
 			if (arcade == null)
 			{
-				return View("ReportFailed");
+				return View("Index");
 			}
 
 			report.TargetName = arcade.Name;
@@ -109,10 +112,20 @@ namespace KCArcades.Controllers
 
 			try
 			{
-				SendReportMail(report);
+				var manager = this.manager ?? (this.manager = await ArcadeReportEntityManager.GetInstanceAsynce());
+				var tableResult = await manager.PostReportAsync(report);
+
+				var memo = tableResult == null ? "処理待ち登録失敗" : "処理待ち登録済み";
+
+				SendReportMail(report, memo);
 			}
 			catch
 			{
+				var machines = report.NumberOfMachines.HasValue ? $", 台数：{report.NumberOfMachines}" : "";
+				var gp = report.NumberOfMachines.HasValue ? $", GP：{report.GPLimitation}" : "";
+				var addtional = !string.IsNullOrWhiteSpace(report.AdditionalInfo) ? Environment.NewLine + report.AdditionalInfo : "";
+				ViewBag.TweetText = $@"@ticktackmobile [kcarcades更新リクエスト] 【{report.Id}】{report.TargetName}" + machines + gp + addtional;
+				
 				return View("ReportFailed");
 			}
 
@@ -136,7 +149,7 @@ namespace KCArcades.Controllers
 			return new SelectList(items, "Value", "Key");
 		}
 
-		private static void SendReportMail(ArcadeReportViewModel report)
+		private static void SendReportMail(ArcadeReportViewModel report, string memo = "")
 		{
 			var sender = "kcarcades-report@kcarcades.net";
 			var subject = "[KCArcades]店舗情報更新リクエスト";
@@ -153,6 +166,8 @@ ID：{report.Id}
 GP制限：{report.GPLimitation.Value}({report.GPLimitation})
 座標：({report.Latitude},{report.Longitude})
 追加情報：{report.AdditionalInfo}
+
+メモ：{memo}
 ";
 
 			var username = System.Environment.GetEnvironmentVariable("SENDGRID_USER");

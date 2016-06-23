@@ -1,9 +1,24 @@
-﻿
-@{
+﻿@{
     ViewBag.Title = "ReportFailed";
 }
 
-<h2>ReportFailed</h2>
+<h2>店舗情報 送信失敗</h2>
+
+<P>更新情報を受付に失敗しました。せっかくご協力いただいたのに申し訳ありません。</P>
+
+<p>もしよろしければTwitterで管理人(<a href="https://twitter.com/ticktackmobile" target="_blank">@@ticktackmobile</a>)までお知らせください。</p>
+
+@using (Html.BeginForm())
+{
+
+<div class="form-group">
+    <label class="control-label col-md-2" for="Latitude">コピペ用</label>
+    <div class="col-md-10">
+        <textarea rows="6" cols="60" class="form-control">@ViewBag.TweetText</textarea>
+    </div>
+</div>
+
+}
 
 <div>
     @Html.ActionLink("地図に戻る", "Index")
