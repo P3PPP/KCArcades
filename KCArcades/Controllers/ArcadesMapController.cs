@@ -159,11 +159,11 @@ namespace KCArcades.Controllers
 ID：{report.Id}
 店舗名：{report.TargetName}
 住所：{report.TargetAddress}
-座標：({report.TargetLatitude},{report.TargetLongitude})
+座標：({report.TargetLatitude})
 
 # 更新データ
 設置台数：{report.NumberOfMachines}
-GP制限：{report.GPLimitation.Value}({report.GPLimitation})
+GP制限：{report.GPLimitation}({report.GPLimitation})
 座標：({report.Latitude},{report.Longitude})
 追加情報：{report.AdditionalInfo}
 
