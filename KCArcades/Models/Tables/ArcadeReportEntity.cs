@@ -35,7 +35,7 @@ namespace KCArcades.Models.Tables
 				this.Geography = $"POINT({report.Latitude.Value} {report.Longitude.Value})";
 			}
 
-			if (this.NeedsAdditionalInfoUpdating = string.IsNullOrWhiteSpace(report.AdditionalInfo))
+			if (this.NeedsAdditionalInfoUpdating = !string.IsNullOrWhiteSpace(report.AdditionalInfo))
 			{
 				this.AdditionalInfo = report.AdditionalInfo;
 			}
